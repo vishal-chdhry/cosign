@@ -47,7 +47,11 @@ func AttestationCmd(ctx context.Context, regOpts options.RegistryOptions, attOpt
 	}
 
 	se, err := ociremote.SignedEntity(ref, ociremoteOpts...)
-	if err != nil {
+	if err == ociremote.ErrEntityNotFound {
+		if digest, ok := ref.(name.Digest); ok {
+			se = ociremote.SignedUnknown(digest)
+		}
+	} else if err != nil {
 		return err
 	}
 

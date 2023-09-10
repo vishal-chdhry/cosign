@@ -68,7 +68,11 @@ const (
 
 func FetchSignaturesForReference(_ context.Context, ref name.Reference, opts ...ociremote.Option) ([]SignedPayload, error) {
 	simg, err := ociremote.SignedEntity(ref, opts...)
-	if err != nil {
+	if err == ociremote.ErrEntityNotFound {
+		if digest, ok := ref.(name.Digest); ok {
+			simg = ociremote.SignedUnknown(digest)
+		}
+	} else if err != nil {
 		return nil, err
 	}
 
